@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiShoppingBag, FiTrash2, FiArrowRight, FiCreditCard, FiDollarSign, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
+import { FiShoppingBag, FiTrash2, FiArrowRight, FiCreditCard, FiDollarSign, FiCheckCircle, FiAlertTriangle, FiMapPin } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 import CartItem from '../components/CartItem';
 import { cartAPI, ordersAPI, paymentAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 
 const Cart = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { refreshCart } = useCart();
     const [cart, setCart] = useState(null);
     const [totalItems, setTotalItems] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
@@ -18,6 +20,21 @@ const Cart = () => {
     const [paymentMethod, setPaymentMethod] = useState('cod');
     const [confirmingPayment, setConfirmingPayment] = useState(false);
     const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+    const [deliveryCity, setDeliveryCity] = useState('');
+    const [shippingAddress, setShippingAddress] = useState({
+        name: user?.name || '',
+        phone: user?.phone || '',
+        street: '',
+        pincode: ''
+    });
+
+    const CITIES = [
+        'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode',
+        'Kallakurichi', 'Kancheepuram', 'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 'Nagapattinam',
+        'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 'Salem', 'Sivaganga',
+        'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 'Tirupathur',
+        'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
+    ];
 
     // Tax calculation (5% GST)
     const TAX_RATE = 0.05;
@@ -53,6 +70,16 @@ const Cart = () => {
         fetchCart();
     }, []);
 
+    useEffect(() => {
+        if (user) {
+            setShippingAddress(prev => ({
+                ...prev,
+                name: prev.name || user.name || '',
+                phone: prev.phone || user.phone || ''
+            }));
+        }
+    }, [user]);
+
     const handleUpdateQuantity = async (productId, quantity) => {
         setUpdating(true);
         try {
@@ -63,6 +90,7 @@ const Cart = () => {
                 await cartAPI.update(productId, quantity);
             }
             await fetchCart();
+            refreshCart();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update cart');
         } finally {
@@ -76,6 +104,7 @@ const Cart = () => {
             await cartAPI.remove(productId);
             toast.success('Item removed from cart');
             await fetchCart();
+            refreshCart();
         } catch (error) {
             toast.error('Failed to remove item');
         } finally {
@@ -91,6 +120,7 @@ const Cart = () => {
             await cartAPI.clear();
             toast.success('Cart cleared');
             await fetchCart();
+            refreshCart();
         } catch (error) {
             toast.error('Failed to clear cart');
         } finally {
@@ -109,16 +139,27 @@ const Cart = () => {
             return;
         }
 
+        if (deliveryCity !== 'Karur') {
+            toast.error('We currently only deliver to Karur');
+            return;
+        }
+
+        // Validate address fields
+        if (!shippingAddress.street || !shippingAddress.pincode || !shippingAddress.phone) {
+            toast.error('Please fill in all address fields');
+            return;
+        }
+
         setConfirmingPayment(true);
         try {
             const orderData = {
                 shippingAddress: {
-                    name: user.name,
-                    phone: user.phone || '',
-                    street: 'To be updated',
-                    city: 'To be updated',
-                    state: 'To be updated',
-                    pincode: '000000'
+                    name: shippingAddress.name || user.name,
+                    phone: shippingAddress.phone,
+                    street: shippingAddress.street,
+                    city: deliveryCity,
+                    state: 'Tamil Nadu',
+                    pincode: shippingAddress.pincode
                 },
                 paymentMethod: 'cod',
                 paymentStatus: 'Pending',
@@ -127,6 +168,7 @@ const Cart = () => {
 
             const response = await ordersAPI.create(orderData);
             toast.success('Order placed successfully!');
+            refreshCart();
             navigate(`/orders/${response.data._id}`);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to place order');
@@ -140,6 +182,17 @@ const Cart = () => {
         if (!user) {
             toast.error('Please login to place order');
             navigate('/login');
+            return;
+        }
+
+        if (deliveryCity !== 'Karur') {
+            toast.error('We currently only deliver to Karur');
+            return;
+        }
+
+        // Validate address fields
+        if (!shippingAddress.street || !shippingAddress.pincode || !shippingAddress.phone) {
+            toast.error('Please fill in all address fields');
             return;
         }
 
@@ -180,12 +233,12 @@ const Cart = () => {
                             razorpay_signature: response.razorpay_signature,
                             orderData: {
                                 shippingAddress: {
-                                    name: user.name,
-                                    phone: user.phone || '',
-                                    street: 'To be updated',
-                                    city: 'To be updated',
-                                    state: 'To be updated',
-                                    pincode: '000000'
+                                    name: shippingAddress.name || user.name,
+                                    phone: shippingAddress.phone,
+                                    street: shippingAddress.street,
+                                    city: deliveryCity,
+                                    state: 'Tamil Nadu',
+                                    pincode: shippingAddress.pincode
                                 },
                                 notes: 'Paid via Razorpay UPI'
                             }
@@ -193,6 +246,7 @@ const Cart = () => {
 
                         if (verifyResponse.data.success) {
                             toast.success('Payment successful! Order placed automatically.');
+                            refreshCart();
                             navigate(`/orders/${verifyResponse.data.order._id}`);
                         }
                     } catch (error) {
@@ -341,6 +395,207 @@ const Cart = () => {
                                 </div>
                             )}
 
+                            {/* Delivery Check */}
+                            <div className="location-check-card" style={{
+                                background: 'white',
+                                padding: '20px',
+                                borderRadius: 'var(--border-radius)',
+                                boxShadow: 'var(--shadow-sm)',
+                                marginBottom: '20px'
+                            }}>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <FiMapPin /> Delivery Location
+                                </h3>
+                                <div className="form-group">
+                                    <select
+                                        value={deliveryCity}
+                                        onChange={(e) => setDeliveryCity(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--gray-300)',
+                                            fontSize: '1rem',
+                                            outline: 'none'
+                                        }}
+                                    >
+                                        <option value="">Select City</option>
+                                        {CITIES.map(city => (
+                                            <option key={city} value={city}>{city}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {deliveryCity && deliveryCity !== 'Karur' && (
+                                    <div style={{
+                                        marginTop: '10px',
+                                        padding: '10px',
+                                        background: '#ffebee',
+                                        color: '#c62828',
+                                        borderRadius: '6px',
+                                        fontSize: '0.9rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        <FiAlertTriangle />
+                                        Sorry, we currently only deliver to Karur.
+                                    </div>
+                                )}
+                                {deliveryCity === 'Karur' && (
+                                    <div style={{
+                                        marginTop: '10px',
+                                        padding: '10px',
+                                        background: '#e8f5e9',
+                                        color: '#2e7d32',
+                                        borderRadius: '6px',
+                                        fontSize: '0.9rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        <FiCheckCircle />
+                                        Location serviceable! You can proceed.
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Shipping Address Form - shown when Karur is selected */}
+                            {deliveryCity === 'Karur' && (
+                                <div style={{
+                                    background: 'white',
+                                    padding: '20px',
+                                    borderRadius: 'var(--border-radius)',
+                                    boxShadow: 'var(--shadow-sm)',
+                                    marginBottom: '20px'
+                                }}>
+                                    <h3 style={{
+                                        fontSize: '1.1rem',
+                                        fontWeight: '600',
+                                        marginBottom: '15px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        <FiMapPin /> Shipping Address
+                                    </h3>
+
+                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                        <label style={{
+                                            display: 'block',
+                                            marginBottom: '6px',
+                                            fontWeight: '500',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            Full Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={shippingAddress.name}
+                                            onChange={(e) => setShippingAddress({ ...shippingAddress, name: e.target.value })}
+                                            placeholder="Enter your full name"
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--gray-300)',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                        <label style={{
+                                            display: 'block',
+                                            marginBottom: '6px',
+                                            fontWeight: '500',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            Phone Number *
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={shippingAddress.phone}
+                                            onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
+                                            placeholder="Enter your phone number"
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--gray-300)',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                        <label style={{
+                                            display: 'block',
+                                            marginBottom: '6px',
+                                            fontWeight: '500',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            Street Address *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={shippingAddress.street}
+                                            onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })}
+                                            placeholder="House No, Street, Area"
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--gray-300)',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: '0' }}>
+                                        <label style={{
+                                            display: 'block',
+                                            marginBottom: '6px',
+                                            fontWeight: '500',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            Pincode *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={shippingAddress.pincode}
+                                            onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
+                                            placeholder="Enter pincode"
+                                            maxLength="6"
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--gray-300)',
+                                                fontSize: '1rem',
+                                                outline: 'none'
+                                            }}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div style={{
+                                        marginTop: '12px',
+                                        padding: '10px',
+                                        background: '#e3f2fd',
+                                        color: '#1976d2',
+                                        borderRadius: '6px',
+                                        fontSize: '0.85rem'
+                                    }}>
+                                        ℹ️ Please provide accurate delivery address for smooth delivery
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Payment Method Selection */}
                             <div className="payment-method-card">
                                 <h3 className="payment-card-title">
@@ -431,8 +686,8 @@ const Cart = () => {
                                     <button
                                         className="btn btn-primary btn-lg"
                                         onClick={handleRazorpayPayment}
-                                        disabled={hasOutOfStock || confirmingPayment}
-                                        style={{ width: '100%' }}
+                                        disabled={hasOutOfStock || confirmingPayment || deliveryCity !== 'Karur'}
+                                        style={{ width: '100%', opacity: deliveryCity !== 'Karur' ? 0.6 : 1, cursor: deliveryCity !== 'Karur' ? 'not-allowed' : 'pointer' }}
                                     >
                                         {confirmingPayment ? (
                                             'Processing...'
@@ -446,8 +701,8 @@ const Cart = () => {
                                     <button
                                         className="btn btn-primary btn-lg"
                                         onClick={handleCODOrder}
-                                        disabled={hasOutOfStock || confirmingPayment}
-                                        style={{ width: '100%' }}
+                                        disabled={hasOutOfStock || confirmingPayment || deliveryCity !== 'Karur'}
+                                        style={{ width: '100%', opacity: deliveryCity !== 'Karur' ? 0.6 : 1, cursor: deliveryCity !== 'Karur' ? 'not-allowed' : 'pointer' }}
                                     >
                                         {confirmingPayment ? (
                                             'Placing Order...'

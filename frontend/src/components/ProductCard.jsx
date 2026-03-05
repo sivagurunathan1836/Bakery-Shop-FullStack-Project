@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiShoppingCart, FiEye } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { cartAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const ProductCard = ({ product, onCartUpdate }) => {
     const { isAuthenticated } = useAuth();
+    const { refreshCart } = useCart();
     const [loading, setLoading] = useState(false);
 
     const isOutOfStock = product.stock <= 0;
@@ -36,6 +38,7 @@ const ProductCard = ({ product, onCartUpdate }) => {
         try {
             await cartAPI.add(product._id, 1);
             toast.success(`${product.name} added to cart!`);
+            refreshCart();
             if (onCartUpdate) onCartUpdate();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to add to cart');

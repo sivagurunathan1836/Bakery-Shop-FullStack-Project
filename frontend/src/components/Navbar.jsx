@@ -3,30 +3,32 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiShoppingCart, FiUser, FiLogOut, FiPackage, FiSettings, FiChevronDown, FiCamera } from 'react-icons/fi';
 import { GiCupcake } from 'react-icons/gi';
 import { useAuth } from '../context/AuthContext';
-import { cartAPI } from '../services/api';
+import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
     const { user, logout, isAdmin, isAuthenticated } = useAuth();
+    const { cartCount } = useCart();
     const navigate = useNavigate();
     const location = useLocation();
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [cartCount, setCartCount] = useState(0);
     const dropdownRef = useRef(null);
 
-    useEffect(() => {
-        const fetchCartCount = async () => {
-            if (isAuthenticated) {
-                try {
-                    const response = await cartAPI.get();
-                    setCartCount(response.data.totalItems || 0);
-                } catch (error) {
-                    console.error('Error fetching cart count:', error);
+    /*
+        useEffect(() => {
+            const fetchCartCount = async () => {
+                if (isAuthenticated) {
+                    try {
+                        const response = await cartAPI.get();
+                        setCartCount(response.data.totalItems || 0);
+                    } catch (error) {
+                        console.error('Error fetching cart count:', error);
+                    }
                 }
-            }
-        };
-
-        fetchCartCount();
-    }, [isAuthenticated, location.pathname]);
+            };
+    
+            fetchCartCount();
+        }, [isAuthenticated, location.pathname]);
+    */
 
     useEffect(() => {
         const handleClickOutside = (event) => {

@@ -370,9 +370,12 @@ const AdminDashboard = () => {
                                         topProducts.map((product) => (
                                             <div key={product._id} className="product-item">
                                                 <img
-                                                    src={product.image || '/placeholder.jpg'}
+                                                    src={product.image ? (product.image.startsWith('http') ? product.image : `http://localhost:5000${product.image}`) : `https://placehold.co/50x50/f5e6d3/5c4033?text=${product.name[0]}`}
                                                     alt={product.name}
                                                     className="product-thumbnail"
+                                                    onError={(e) => {
+                                                        e.target.src = `https://placehold.co/50x50/f5e6d3/5c4033?text=${product.name[0]}`;
+                                                    }}
                                                 />
                                                 <div className="product-details">
                                                     <span className="product-name">{product.name}</span>

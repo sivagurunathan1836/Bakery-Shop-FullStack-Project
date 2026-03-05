@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiPlus, FiEdit2, FiTrash2, FiSettings } from 'react-icons/fi';
+import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiPlus, FiEdit2, FiTrash2, FiSettings, FiSearch } from 'react-icons/fi';
 import { productsAPI, categoriesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -25,6 +25,7 @@ const ManageProducts = () => {
         image: '',
         imageFile: null
     });
+    const [searchTerm, setSearchTerm] = useState('');
 
     const fetchData = async () => {
         try {
@@ -144,6 +145,11 @@ const ManageProducts = () => {
 
     const selectedCategory = categories.find(c => c._id === formData.category);
 
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    ).sort((a, b) => a.name.localeCompare(b.name));
+
     const sidebarLinks = [
         { to: '/admin', icon: FiHome, label: 'Dashboard' },
         { to: '/admin/products', icon: FiPackage, label: 'Products' },
@@ -181,12 +187,31 @@ const ManageProducts = () => {
             <main className="admin-content">
                 <div className="admin-header">
                     <h1 className="admin-title">Manage Products</h1>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => { resetForm(); setShowModal(true); }}
-                    >
-                        <FiPlus /> Add Product
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ position: 'relative' }}>
+                            <FiSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }} />
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{
+                                    padding: '10px 20px 10px 40px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--gray-300)',
+                                    outline: 'none',
+                                    width: '350px',
+                                    fontSize: '1rem'
+                                }}
+                            />
+                        </div>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => { resetForm(); setShowModal(true); }}
+                        >
+                            <FiPlus /> Add Product
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -202,12 +227,11 @@ const ManageProducts = () => {
                                 <th>Category</th>
                                 <th>Price</th>
                                 <th>Stock</th>
-                                <th>Featured</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {products.map((product) => (
+                            {filteredProducts.map((product) => (
                                 <tr key={product._id}>
                                     <td>
                                         <img
@@ -233,7 +257,6 @@ const ManageProducts = () => {
                                             {product.stock}
                                         </span>
                                     </td>
-                                    <td>{product.isFeatured ? '⭐' : '-'}</td>
                                     <td>
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             <button

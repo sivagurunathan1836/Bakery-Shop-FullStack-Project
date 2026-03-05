@@ -122,3 +122,37 @@ exports.addSubcategory = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
+// @desc    Remove subcategory from category (Admin)
+// @route   DELETE /api/categories/:id/subcategory/:subId
+// @access  Private/Admin
+exports.removeSubcategory = async (req, res) => {
+    try {
+        console.log(`Removing subcategory. CatID: ${req.params.id}, SubID/Name: ${req.params.subId}`);
+        const category = await Category.findById(req.params.id);
+
+        if (category) {
+            const originalLength = category.subcategories.length;
+
+            category.subcategories = category.subcategories.filter((sub) => {
+                const sId = sub._id ? sub._id.toString() : '';
+                return sId !== req.params.subId && sub.name !== req.params.subId;
+            });
+
+            if (category.subcategories.length === originalLength) {
+                console.log('No subcategory found to remove with that ID or Name');
+            } else {
+                console.log('Subcategory removed');
+            }
+
+            await category.save();
+            res.json(category);
+        } else {
+            console.log('Category not found');
+            res.status(404).json({ message: 'Category not found' });
+        }
+    } catch (error) {
+        console.error('Error removing subcategory:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};

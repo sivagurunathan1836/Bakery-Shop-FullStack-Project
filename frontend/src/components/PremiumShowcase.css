@@ -1,0 +1,116 @@
+.premium-section {
+    padding: 80px 0;
+    background: linear-gradient(to bottom, #fff5eb, #fff);
+}
+
+.premium-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 20px;
+    padding-bottom: 40px;
+}
+
+.premium-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.premium-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(92, 64, 51, 0.15);
+}
+
+.premium-image-wrapper {
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+    background: #fdfdfd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.premium-image-wrapper img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    transition: transform 0.5s ease;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+}
+
+.premium-card:hover .premium-image-wrapper img {
+    transform: scale(1.1);
+}
+
+.premium-tag {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: var(--secondary);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.premium-content {
+    padding: 24px;
+}
+
+.premium-content h3 {
+    font-size: 1.25rem;
+    color: var(--dark);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.premium-content p {
+    font-size: 0.95rem;
+    color: var(--gray-600);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.premium-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+}
+
+.price {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+}
+
+.add-btn {
+    background: var(--primary-light);
+    color: var(--secondary);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: rotate(90deg);
+}

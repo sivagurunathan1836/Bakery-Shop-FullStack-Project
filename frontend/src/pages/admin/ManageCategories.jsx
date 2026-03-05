@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiPlus, FiEdit2, FiTrash2, FiSettings } from 'react-icons/fi';
+import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiPlus, FiEdit2, FiTrash2, FiSettings, FiX } from 'react-icons/fi';
 import { categoriesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -69,6 +69,33 @@ const ManageCategories = () => {
             fetchCategories();
         } catch (error) {
             toast.error('Failed to add subcategory');
+        }
+    };
+
+    const handleRemoveSubcategory = async (categoryId, subId, subName) => {
+        if (!window.confirm(`Remove subcategory "${subName}"?`)) return;
+
+        try {
+            const category = categories.find(c => c._id === categoryId);
+            if (!category) {
+                toast.error('Category not found');
+                return;
+            }
+
+            const updatedSubcategories = category.subcategories.filter(
+                sub => sub._id !== subId && sub.name !== subName
+            );
+
+            // Use update API instead of remove API to avoid 404 issues with new routes
+            await categoriesAPI.update(categoryId, {
+                subcategories: updatedSubcategories
+            });
+
+            toast.success('Subcategory removed');
+            fetchCategories();
+        } catch (error) {
+            console.error('Remove error details:', error);
+            toast.error('Failed to remove subcategory');
         }
     };
 
@@ -178,10 +205,27 @@ const ManageCategories = () => {
                                                     padding: '6px 14px',
                                                     background: 'var(--primary-light)',
                                                     borderRadius: '20px',
-                                                    fontSize: '0.875rem'
+                                                    fontSize: '0.875rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px'
                                                 }}
                                             >
                                                 {sub.name}
+                                                <button
+                                                    onClick={() => handleRemoveSubcategory(category._id, sub._id, sub.name)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        cursor: 'pointer',
+                                                        color: 'var(--gray-600)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        padding: 0
+                                                    }}
+                                                >
+                                                    <FiX size={14} />
+                                                </button>
                                             </span>
                                         ))}
                                     </div>

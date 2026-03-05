@@ -48,7 +48,8 @@ export const categoriesAPI = {
     create: (data) => api.post('/categories', data),
     update: (id, data) => api.put(`/categories/${id}`, data),
     delete: (id) => api.delete(`/categories/${id}`),
-    addSubcategory: (id, data) => api.post(`/categories/${id}/subcategory`, data)
+    addSubcategory: (id, data) => api.post(`/categories/${id}/subcategory`, data),
+    removeSubcategory: (id, subId) => api.delete(`/categories/${id}/subcategory/${subId}`)
 };
 
 // Products API
