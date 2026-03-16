@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiSettings, FiAlertTriangle } from 'react-icons/fi';
+import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiSearch, FiSettings, FiPieChart, FiAlertTriangle } from 'react-icons/fi';
 import { productsAPI } from '../../services/api';
+import Sidebar from '../../components/admin/Sidebar';
 import toast from 'react-hot-toast';
 
 const ManageStock = () => {
@@ -51,37 +52,11 @@ const ManageStock = () => {
     const lowStockProducts = products.filter(p => p.stock < 5);
     const outOfStockProducts = products.filter(p => p.stock === 0);
 
-    const sidebarLinks = [
-        { to: '/admin', icon: FiHome, label: 'Dashboard' },
-        { to: '/admin/products', icon: FiPackage, label: 'Products' },
-        { to: '/admin/categories', icon: FiGrid, label: 'Categories' },
-        { to: '/admin/orders', icon: FiShoppingBag, label: 'Orders' },
-        { to: '/admin/stock', icon: FiBox, label: 'Stock Management' }
-    ];
+
 
     return (
         <div className="admin-layout">
-            <aside className="admin-sidebar">
-                <h2 className="admin-sidebar-title">
-                    <FiSettings style={{ marginRight: '8px' }} />
-                    Admin Panel
-                </h2>
-                <nav>
-                    <ul className="admin-sidebar-nav">
-                        {sidebarLinks.map((link) => (
-                            <li key={link.to}>
-                                <Link
-                                    to={link.to}
-                                    className={`admin-sidebar-link ${location.pathname === link.to ? 'active' : ''}`}
-                                >
-                                    <link.icon />
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </aside>
+            <Sidebar />
 
             <main className="admin-content">
                 <div className="admin-header">

@@ -7,26 +7,20 @@ exports.getAllProducts = async (req, res) => {
     try {
         const { category, subcategory, search, featured, inStock, sort, limit = 20, page = 1 } = req.query;
 
-        let query = { isAvailable: true };
+        let query = {};
 
-        if (category) {
-            query.category = category;
-        }
-
-        if (subcategory) {
-            query.subcategory = subcategory;
-        }
-
-        if (search) {
-            query.name = { $regex: search, $options: 'i' };
-        }
-
-        if (featured === 'true') {
-            query.isFeatured = true;
-        }
+        if (category) query.category = category;
+        if (subcategory) query.subcategory = subcategory;
+        if (search) query.name = { $regex: search, $options: 'i' };
 
         if (inStock === 'true') {
             query.stock = { $gt: 0 };
+            query.isAvailable = true;
+        } else if (featured === 'true') {
+            query.isFeatured = true;
+            query.isAvailable = true;
+        } else if (req.query.isAvailable !== undefined) {
+            query.isAvailable = req.query.isAvailable === 'true';
         }
 
         let sortOption = { createdAt: -1 };

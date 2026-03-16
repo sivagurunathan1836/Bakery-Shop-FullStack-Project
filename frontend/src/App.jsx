@@ -25,6 +25,9 @@ import ManageProducts from './pages/admin/ManageProducts';
 import ManageCategories from './pages/admin/ManageCategories';
 import ManageOrders from './pages/admin/ManageOrders';
 import ManageStock from './pages/admin/ManageStock';
+import Analytics from './pages/admin/Analytics';
+import AIBakeryAnalytics from './pages/admin/AIBakeryAnalytics';
+import NewOrderAlert from './components/admin/NewOrderAlert';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -53,6 +56,8 @@ const AdminRoute = ({ children }) => {
 };
 
 function App() {
+    const { isAdmin } = useAuth();
+
     return (
         <>
             <Toaster
@@ -66,6 +71,8 @@ function App() {
                     },
                 }}
             />
+
+            {isAdmin && isAdmin() && <NewOrderAlert />}
 
             <Navbar />
 
@@ -127,6 +134,16 @@ function App() {
                     <Route path="/admin/stock" element={
                         <AdminRoute>
                             <ManageStock />
+                        </AdminRoute>
+                    } />
+                    <Route path="/admin/analytics" element={
+                        <AdminRoute>
+                            <Analytics />
+                        </AdminRoute>
+                    } />
+                    <Route path="/admin/ai-analytics" element={
+                        <AdminRoute>
+                            <AIBakeryAnalytics />
                         </AdminRoute>
                     } />
 

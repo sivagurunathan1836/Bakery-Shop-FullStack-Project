@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiSettings } from 'react-icons/fi';
+import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiBox, FiSettings, FiPieChart } from 'react-icons/fi';
 import { ordersAPI } from '../../services/api';
+import Sidebar from '../../components/admin/Sidebar';
 import toast from 'react-hot-toast';
 
 // CSS for new order animation - HIGH VISIBILITY MODE
@@ -277,37 +278,11 @@ const ManageOrders = () => {
         return classes[status] || 'status-pending';
     };
 
-    const sidebarLinks = [
-        { to: '/admin', icon: FiHome, label: 'Dashboard' },
-        { to: '/admin/products', icon: FiPackage, label: 'Products' },
-        { to: '/admin/categories', icon: FiGrid, label: 'Categories' },
-        { to: '/admin/orders', icon: FiShoppingBag, label: 'Orders' },
-        { to: '/admin/stock', icon: FiBox, label: 'Stock Management' }
-    ];
+
 
     return (
         <div className="admin-layout">
-            <aside className="admin-sidebar">
-                <h2 className="admin-sidebar-title">
-                    <FiSettings style={{ marginRight: '8px' }} />
-                    Admin Panel
-                </h2>
-                <nav>
-                    <ul className="admin-sidebar-nav">
-                        {sidebarLinks.map((link) => (
-                            <li key={link.to}>
-                                <Link
-                                    to={link.to}
-                                    className={`admin-sidebar-link ${location.pathname === link.to ? 'active' : ''}`}
-                                >
-                                    <link.icon />
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </aside>
+            <Sidebar />
 
             <main className="admin-content">
                 {/* Persistent New Order Alert Banner */}

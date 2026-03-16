@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiShoppingBag, FiTrash2, FiArrowRight, FiCreditCard, FiDollarSign, FiCheckCircle, FiAlertTriangle, FiMapPin } from 'react-icons/fi';
+import { FiShoppingBag, FiTrash2, FiArrowRight, FiCreditCard, FiDollarSign, FiCheckCircle, FiAlertTriangle, FiMapPin, FiTrendingUp } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 import CartItem from '../components/CartItem';
-import { cartAPI, ordersAPI, paymentAPI } from '../services/api';
+import ProductCard from '../components/ProductCard';
+import { cartAPI, ordersAPI, paymentAPI, productsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
@@ -27,6 +28,7 @@ const Cart = () => {
         street: '',
         pincode: ''
     });
+    const [recommendations, setRecommendations] = useState([]);
 
     const CITIES = [
         'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode',
@@ -69,6 +71,51 @@ const Cart = () => {
     useEffect(() => {
         fetchCart();
     }, []);
+
+    // AI Recommendation Logic
+    useEffect(() => {
+        const getRecommendations = async () => {
+            if (!cart || !cart.items || cart.items.length === 0) {
+                setRecommendations([]);
+                return;
+            }
+
+            try {
+                // Get IDs of items currently in cart
+                const cartProductIds = cart.items.map(item => String(item.product?._id || item.product));
+                console.log("Cart Product IDs:", cartProductIds);
+
+                // Fetch our entire product catalog
+                const response = await productsAPI.getAll({ limit: 100 });
+                const allProducts = response.data.products || [];
+                console.log("All Products fetched:", allProducts.length);
+
+                let recommended = [];
+                for (let p of allProducts) {
+                    const idString = String(p._id);
+                    if (!cartProductIds.includes(idString) && p.stock > 0) {
+                        recommended.push(p);
+                    }
+                }
+
+                console.log("Filtered recommended before shuffling:", recommended.length);
+
+                // If somehow empty, just show anything available
+                if (recommended.length === 0) {
+                    recommended = allProducts;
+                }
+
+                // Shuffle utilizing Fisher-Yates approach substitute to diversify what's shown
+                recommended = recommended.sort(() => 0.5 - Math.random()).slice(0, 4);
+
+                console.log("Final set of recommendations:", recommended.length);
+                setRecommendations(recommended);
+            } catch (error) {
+                console.error("Failed to fetch AI recommendations", error);
+            }
+        };
+        getRecommendations();
+    }, [cart]);
 
     useEffect(() => {
         if (user) {
@@ -721,6 +768,25 @@ const Cart = () => {
                                     Continue Shopping
                                 </Link>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* AI Recommendations Section */}
+                {recommendations.length > 0 && items.length > 0 && (
+                    <div style={{ marginTop: '50px', paddingTop: '30px', borderTop: '1px solid var(--gray-200)' }}>
+                        <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.5rem', marginBottom: '25px', color: 'var(--text-dark)' }}>
+                            <FiTrendingUp style={{ color: 'var(--primary)' }} />
+                            Pairs perfectly with your items!
+                        </h3>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                            gap: '24px'
+                        }}>
+                            {recommendations.map(product => (
+                                <ProductCard key={product._id} product={product} onCartUpdate={fetchCart} />
+                            ))}
                         </div>
                     </div>
                 )}

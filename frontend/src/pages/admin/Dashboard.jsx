@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiSettings, FiBox, FiTrendingUp, FiDollarSign, FiUsers, FiClock, FiAlertTriangle, FiArrowRight, FiCheckCircle, FiXCircle, FiRefreshCw } from 'react-icons/fi';
+import { FiHome, FiPackage, FiGrid, FiShoppingBag, FiSettings, FiBox, FiTrendingUp, FiDollarSign, FiUsers, FiClock, FiAlertTriangle, FiArrowRight, FiCheckCircle, FiXCircle, FiRefreshCw, FiPieChart, FiTruck } from 'react-icons/fi';
 import { productsAPI, categoriesAPI, ordersAPI } from '../../services/api';
+import Sidebar from '../../components/admin/Sidebar';
 
 const AdminDashboard = () => {
     const location = useLocation();
@@ -112,13 +113,7 @@ const AdminDashboard = () => {
         return icons[status] || <FiClock />;
     };
 
-    const sidebarLinks = [
-        { to: '/admin', icon: FiHome, label: 'Dashboard' },
-        { to: '/admin/products', icon: FiPackage, label: 'Products' },
-        { to: '/admin/categories', icon: FiGrid, label: 'Categories' },
-        { to: '/admin/orders', icon: FiShoppingBag, label: 'Orders' },
-        { to: '/admin/stock', icon: FiBox, label: 'Stock Management' }
-    ];
+
 
     const quickActions = [
         { to: '/admin/products', icon: FiPackage, label: 'Add Product', color: '#2e7d32' },
@@ -129,28 +124,7 @@ const AdminDashboard = () => {
 
     return (
         <div className="admin-layout">
-            {/* Sidebar */}
-            <aside className="admin-sidebar">
-                <h2 className="admin-sidebar-title">
-                    <FiSettings style={{ marginRight: '8px' }} />
-                    Admin Panel
-                </h2>
-                <nav>
-                    <ul className="admin-sidebar-nav">
-                        {sidebarLinks.map((link) => (
-                            <li key={link.to}>
-                                <Link
-                                    to={link.to}
-                                    className={`admin-sidebar-link ${location.pathname === link.to ? 'active' : ''}`}
-                                >
-                                    <link.icon />
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </aside>
+            <Sidebar />
 
             {/* Main Content */}
             <main className="admin-content">

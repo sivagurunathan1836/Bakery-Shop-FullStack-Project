@@ -9,7 +9,7 @@ exports.getCart = async (req, res) => {
         let cart = await Cart.findOne({ user: req.user._id })
             .populate({
                 path: 'items.product',
-                select: 'name price priceUnit image stock isAvailable'
+                select: 'name price priceUnit image stock isAvailable category'
             });
 
         if (!cart) {
@@ -97,7 +97,7 @@ exports.addToCart = async (req, res) => {
         cart = await Cart.findOne({ user: req.user._id })
             .populate({
                 path: 'items.product',
-                select: 'name price priceUnit image stock isAvailable'
+                select: 'name price priceUnit image stock isAvailable category'
             });
 
         res.json(cart);
