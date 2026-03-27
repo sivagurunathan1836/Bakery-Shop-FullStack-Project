@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "npm install --prefix frontend && npm install --prefix backend",
-    "build": "npm run build --prefix frontend"
+    "install": "npm install --prefix frontend && npm install --prefix backend",
+    "build": "npm run build --prefix frontend && mkdir -p public && cp -r frontend/dist/* public/"
   }
 }
