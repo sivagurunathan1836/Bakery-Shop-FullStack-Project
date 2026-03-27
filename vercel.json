@@ -2,15 +2,15 @@
   "version": 2,
   "builds": [
     {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
       }
-    },
-    {
-      "src": "backend/server.js",
-      "use": "@vercel/node"
     }
   ],
   "rewrites": [
@@ -21,6 +21,14 @@
     {
       "source": "/uploads/(.*)",
       "destination": "/backend/server.js"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/frontend/dist/assets/$1"
+    },
+    {
+      "source": "/(.*)\\.(png|jpg|jpeg|svg|ico|json)$",
+      "destination": "/frontend/dist/$1.$2"
     },
     {
       "source": "/(.*)",
