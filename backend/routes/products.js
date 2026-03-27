@@ -13,38 +13,22 @@ const {
 const { protect } = require('../middleware/auth');
 const { admin } = require('../middleware/admin');
 const multer = require('multer');
-const path = require('path');
+const { storage } = require('../config/cloudinary');
 
-// Configure upload
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-        cb(null, 'product-' + Date.now() + path.extname(file.originalname));
-    }
-});
-
+// Configure upload using Cloudinary storage
 const upload = multer({
     storage: storage,
     limits: { fileSize: 5000000 }, // 5MB
     fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
+        const filetypes = /jpeg|jpg|png|webp/;
+        const mimetype = filetypes.test(file.mimetype);
+        if (mimetype) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Error: Images Only!'));
+        }
     }
 });
-
-// Check file type
-function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|webp/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb('Error: Images Only!');
-    }
-}
 
 router.get('/', getAllProducts);
 router.get('/featured', getFeaturedProducts);

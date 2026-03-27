@@ -92,10 +92,10 @@ exports.createProduct = async (req, res) => {
     try {
         const { name, description, price, priceUnit, category, subcategory, stock, isFeatured } = req.body;
 
-        // Handle image upload
+        // Handle image upload - req.file.path is the Cloudinary URL
         let image = req.body.image || '';
         if (req.file) {
-            image = `/uploads/${req.file.filename}`;
+            image = req.file.path;
         }
 
         const product = await Product.create({
@@ -135,9 +135,9 @@ exports.updateProduct = async (req, res) => {
             product.category = category || product.category;
             product.subcategory = subcategory || product.subcategory;
 
-            // Handle image upload
+            // Handle image upload - req.file.path is the Cloudinary URL
             if (req.file) {
-                product.image = `/uploads/${req.file.filename}`;
+                product.image = req.file.path;
             } else if (req.body.image) {
                 product.image = req.body.image;
             }
